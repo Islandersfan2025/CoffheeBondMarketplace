@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COFFHEE BONDS | Frappucino TERMINAL V2.1</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --matrix-green: #00FF41;
+            --dark-bg: #0d0208;
+            --terminal-gray: #1a1a1a;
+            --border-color: rgba(0, 255, 65, 0.2);
+            --ask-red: #ff4136; /* Trading color for selling */
+        }
+
+        body {
+            background-color: var(--dark-bg);
+            color: var(--matrix-green);
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem; /* Institutional high-density */
+            margin: 0;
+            overflow: hidden; /* We handle scrolling in specific panels */
+        }
+
+        /* --- Global Utility --- */
+        a { color: #888; text-decoration: none; }
+        a:hover { color: #fff; }
+        hr { border-top: 1px solid var(--border-color); opacity: 1; }
+
+        /* --- Main Layout --- */
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* --- Header / StatusBar --- */
+        .market-header {
+            background: #000;
+            border-bottom: 2px solid var(--matrix-green);
+            padding: 5px 15px;
+            z-index: 10;
+        }
+
+        /* --- Scoll Ticker Tape --- */
+        .ticker-wrap {
+            width: 100%;
+            background-color: rgba(0, 255, 65, 0.05);
+            overflow: hidden;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .ticker {
+            display: flex;
+            white-space: nowrap;
+            animation: ticker 30s linear infinite;
+            padding: 5px 0;
+        }
+        .ticker__item {
+            padding: 0 2rem;
+            color: #fff;
+        }
+        .ticker__item::before { content: "[TX] "; color: var(--matrix-green); }
+        .ticker__val.up { color: var(--matrix-green); }
+        .ticker__val.down { color: var(--ask-red); }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* --- The Main Trading Floor (Layout) --- */
+        .trading-floor {
+            flex: 1;
+            display: flex;
+            overflow: hidden; /* Crucial for internal panel scrolling */
+        }
+
+        /* Left Panel: The Order Book (The NYSE Look) */
+        .order-book-panel {
+            flex: 3;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-header {
+            background: var(--terminal-gray);
+            padding: 8px;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .book-scroll { overflow-y: auto; flex: 1; }
+
+        .table-terminal {
+            width: 100%;
+            margin-bottom: 0;
+            border-collapse: collapse;
+        }
+        .table-terminal th {
+            position: sticky; top: 0; background: var(--dark-bg);
+            color: #fff; text-align: left; padding: 10px; font-weight: 300;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .table-terminal td { padding: 10px; vertical-align: middle; border-bottom: 1px solid #111; }
+        
+        /* The NYSE / Ask styling (Selling bonds) */
+        .table-terminal tbody tr.is-active {
+            transition: 0.1s;
+        }
+        .table-terminal tbody tr.is-active:hover {
+            background-color: rgba(255, 65, 54, 0.1); /* Red highlight on hover */
+            cursor: pointer;
+        }
+
+        .price-col { font-size: 1.1rem; color: #fff; }
+        .is-ask { color: var(--ask-red); font-weight: bold;}
+
+        /* Right Panel: Transaction Log & Watchlist */
+        .activity-panel { flex: 1; display: flex; flex-direction: column; }
+        .log-scroll { overflow-y: auto; flex: 1; padding: 10px; color: #888; font-size: 0.8rem; }
+        .log-entry { margin-bottom: 5px; }
+        .log-entry.buy { color: var(--matrix-green); }
+        .log-entry.cancel { color: var(--ask-red); }
+
+        /* --- The Matrix CLI (Footer) --- */
+        .matrix-cli {
+            background: var(--terminal-gray);
+            border-top: 2px solid var(--matrix-green);
+            padding: 10px 15px;
+            z-index: 10;
+        }
+        .prompt::before { content: "cbond://market [mainnet]$ "; color: #fff; }
+        .cli-input {
+            background: transparent; border: none; color: var(--matrix-green);
+            outline: none; width: 60%; font-family: 'Fira Code', monospace;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+
+    <div class="market-header d-flex justify-content-between align-items-center">
+        <h1 class="h6 m-0">[COFFHEE_BONDS // SYS_TERMINAL_V2.1]</h1>
+        <small class="status-bar text-secondary">
+            NET: Arbitrum |  WALLET: 0x71C...4f
+        </small>
+    </div>
+
+    <div class="ticker-wrap">
+        <div class="ticker">
+            <div class="ticker__item">ETH: $3,145.22 (+1.2%)</div>
+            <div class="ticker__item">BOND_001 (US_TREAS): 0.98 ETH <span class="ticker__val down">▼ 0.01</span></div>
+            <div class="ticker__item">BOND_102 (CORP_A): 1.15 ETH <span class="ticker__val up">▲ 0.02</span></div>
+            <div class="ticker__item">BOND_404 (NEURAL): 0.55 ETH <span class="ticker__val up">▲ 0.10</span></div>
+            <div class="ticker__item">MARKET_STATUS: OPEN (EST: 14:02)</div>
+        </div>
+    </div>
+
+    <div class="trading-floor">
+
+        <div class="order-book-panel">
+            <div class="panel-header d-flex justify-content-between align-items-center">
+                <span>Active Listings // Bond Asks</span>
+                <span class="text-white">Active (344)</span>
+            </div>
+            <div class="book-scroll">
+                <table class="table-terminal">
+                    <thead>
+                        <tr>
+                            <th>LISTING ID</th>
+                            <th>BOND ASSET // CONTRACT</th>
+                            <th class="text-end">AMOUNT AVAIL</th>
+                            <th class="text-end">UNIT PRICE (ETH)</th>
+                            <th class="text-end">TOTAL VALUE</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderBookBody">
+                        <tr class="is-active" onclick="prepareBuy(1024)">
+                            <td class="is-ask">#1024</td>
+                            <td>COFFHEE_BOND / <small>0xAb8BD1b16a9912c2DD39b433c72b10559A1b7621
+ / TKN: 1</small></td>
+                            <td class="text-end text-white">45 / 100</td>
+                            <td class="text-end price-col">0.450</td>
+                            <td class="text-end">20.25 ETH</td>
+                        </tr>
+                        <tr class="is-active" onclick="prepareBuy(1025)">
+                            <td class="is-ask">#1025</td>
+                            <td>US_TREASURY_2030 / <small>0x4f2...88b / TKN: 55</small></td>
+                            <td class="text-end text-white">1,200</td>
+                            <td class="text-end price-col">0.098</td>
+                            <td class="text-end">119 ETH</td>
+                        </tr>
+                        <tr class="is-active" onclick="prepareBuy(1025)">
+                            <td class="is-ask">#1026</td>
+                            <td>PINCO_HIGH_YIELD_SAVINGS_BOND / <small>0x4f2...88b / TKN: 55</small></td>
+                            <td class="text-end text-white">1,800</td>
+                            <td class="text-end price-col">0.098</td>
+                            <td class="text-end">117.6 ETH</td>
+                        </tr>
+                        <tr class="is-active" onclick="prepareBuy(1025)">
+                            <td class="is-ask">#1027</td>
+                            <td>VIACON_DAO_TREASURY_BOND / <small>0x4f2...88b / TKN: 55</small></td>
+                            <td class="text-end text-white">1,000</td>
+                            <td class="text-end price-col">0.098</td>
+                            <td class="text-end">200 ETH</td>
+                        </tr>
+                        <tr class="is-active" onclick="prepareBuy(1025)">
+                            <td class="is-ask">#1028</td>
+                            <td>VANGUARD_CAPITAL / <small>0x4f2...88b / TKN: 55</small></td>
+                            <td class="text-end text-white">2,200</td>
+                            <td class="text-end price-col">0.098</td>
+                            <td class="text-end">56 ETH</td>
+                        </tr><tr class="is-active" onclick="prepareBuy(1025)">
+                            <td class="is-ask">#1029</td>
+                            <td>US_TREASURY_2040 / <small>0x4f2...88b / TKN: 55</small></td>
+                            <td class="text-end text-white">2,000</td>
+                            <td class="text-end price-col">0.098</td>
+                            <td class="text-end">12 ETH</td>
+                        </tr><tr class="is-active" onclick="prepareBuy(1025)">
+                            <td class="is-ask">#1030</td>
+                            <td>HSBC_HIGH_YIELD_BOND / <small>0x4f2...88b / TKN: 55</small></td>
+                            <td class="text-end text-white">3,000</td>
+                            <td class="text-end price-col">0.098</td>
+                            <td class="text-end">49 ETH</td>
+                        </tr>
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="activity-panel">
+            <div class="panel-header">Live Market Activity</div>
+            <div class="log-scroll">
+                <div class="log-entry"> > Listening for Market Events...</div>
+                <div class="log-entry buy"> [PURCHASED] // Listing #1020 // Qty: 5 // By: 0xA1...d2</div>
+                <div class="log-entry cancel"> [CANCELLED] // Listing #1019 // By OWNER</div>
+                <div class="log-entry buy"> [PURCHASED] // Listing #1015 // Qty: 100 // By: 0x5f...e1</div>
+                <div class="log-entry"> [SYSTEM] // Gas volatility detected (25 GWEI). Use caution.</div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="matrix-cli">
+        <span class="prompt"></span>
+        <input type="text" id="cliInput" class="cli-input" placeholder="buy <listing_id> <amount> // list <token_addr> <id> <amt> <price>" autofocus>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="app.js"></script>
+
+</body>
+</html>
